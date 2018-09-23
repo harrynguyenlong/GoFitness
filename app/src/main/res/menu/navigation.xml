@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_songs"
+        android:icon="@drawable/ic_home"
+        android:title="Songs"/>
+
+
+    <item
+        android:id="@+id/navigation_maps"
+        android:icon="@drawable/ic_map"
+        android:title="Maps"/>
+
+    <item
+        android:id="@+id/navigation_camera"
+        android:icon="@drawable/ic_camera"
+        android:title="Camera"/>
+
+    <item
+        android:id="@+id/navigation_dashboard"
+        android:icon="@drawable/ic_user"
+        android:title="Dashboard"/>
+
+</menu>
