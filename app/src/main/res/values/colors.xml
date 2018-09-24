@@ -4,4 +4,7 @@
     <color name="colorPrimaryDark">#356859</color>
     <color name="colorAccent">#FF4081</color>
     <color name="white">#fff</color>
+    <color name="homeBackGround">#FFFBE6</color>
+    <color name="black">#000</color>
+    <color name="buttonColor">#FD5523</color>
 </resources>

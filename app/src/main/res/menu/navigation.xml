@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/navigation_songs"
+        android:id="@+id/navigation_home"
         android:icon="@drawable/ic_home"
-        android:title="Songs"/>
+        android:title="Home"/>
 
 
     <item
@@ -18,8 +18,8 @@
         android:title="Camera"/>
 
     <item
-        android:id="@+id/navigation_dashboard"
+        android:id="@+id/navigation_user"
         android:icon="@drawable/ic_user"
-        android:title="Dashboard"/>
+        android:title="User"/>
 
 </menu>
