@@ -19,6 +19,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
+import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListener, HomeFragmentInterface {
@@ -93,6 +95,12 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
 
     }
 
+    override fun onStart() {
+        super.onStart()
+
+        getCurrentTime()
+    }
+
     override fun onMapClicked() {
         println(1234)
     }
@@ -137,5 +145,16 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
 
     private fun didSetHomeTown() {
         cityName.text = homeTown
+    }
+
+    private fun getCurrentTime() {
+
+        val currentDate = Date(Calendar.getInstance().timeInMillis)
+
+        val dateFormatter = SimpleDateFormat("dd/MM/yyyy")
+
+        var dateString = dateFormatter.format(currentDate)
+
+        timeStamp.text = dateString
     }
 }
