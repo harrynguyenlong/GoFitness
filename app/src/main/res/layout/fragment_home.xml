@@ -57,7 +57,7 @@
                 android:id="@+id/cityName"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:text="Helsinki"
+                android:text="--"
                 android:textSize="15sp"
                 android:gravity="center"
                 android:paddingLeft="8dp"
@@ -70,7 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="@string/testTimeString"
+            android:text=""
             android:textColor="@color/black"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -98,7 +98,7 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:paddingLeft="8dp"
-                android:text="12°C"
+                android:text="--"
                 android:textColor="@color/black"
                 android:textSize="15sp" />
 
