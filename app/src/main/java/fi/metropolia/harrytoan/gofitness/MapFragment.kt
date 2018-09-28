@@ -7,10 +7,21 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.MapsInitializer
+import com.google.android.gms.maps.OnMapReadyCallback
+import kotlinx.android.synthetic.main.fragment_map.*
+import kotlinx.android.synthetic.main.fragment_map.view.*
 
 
-class MapFragment : Fragment() {
-    private var listener: OnFragmentInteractionListener? = null
+class MapFragment : Fragment(), OnMapReadyCallback {
+
+    private lateinit var mMapView: MapView
+
+    private lateinit var mGoogleMap: GoogleMap
+
+    private lateinit var mView: View
 
     companion object {
         fun newInstance() = MapFragment()
@@ -19,30 +30,53 @@ class MapFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_map, container, false)
+
+        mView =  inflater.inflate(R.layout.fragment_map, container, false)
+
+        return mView
     }
 
-    fun onButtonPressed() {
-        listener?.onMapClicked()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        mMapView = map
+
+        if (mMapView != null) {
+            mMapView.onCreate(null)
+            mMapView.onResume()
+            mMapView.getMapAsync(this)
+        }
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is OnFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
-        }
     }
 
     override fun onDetach() {
         super.onDetach()
-        listener = null
     }
 
-    interface OnFragmentInteractionListener {
+    override fun onDestroy() {
+        super.onDestroy()
 
-        fun onMapClicked()
+        mMapView.onDestroy()
+    }
+
+    override fun onResume() {
+
+        mMapView.onResume()
+
+        super.onResume()
+
+    }
+
+    override fun onMapReady(googleMap: GoogleMap?) {
+        MapsInitializer.initialize(context)
+
+        mGoogleMap = googleMap!!
+
+        googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
+
     }
 
 }

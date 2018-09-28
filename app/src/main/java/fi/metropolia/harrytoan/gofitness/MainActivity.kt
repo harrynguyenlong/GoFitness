@@ -23,28 +23,13 @@ import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListener, HomeFragmentInterface {
-
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-
-    private var currentLocation: Location? = null
-        set(value: Location?) {
-            field = value
-            didSetCurrentLocation()
-        }
-
-    private var geoCoder: Geocoder? = null
-
-    private var homeTown: String = ""
-        set(value) {
-            field = value
-            didSetHomeTown()
-        }
+class MainActivity : AppCompatActivity(), HomeFragmentInterface {
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.navigation_home -> {
                 val homeFragment = HomeFragment.newInstance()
+                homeFragment.listener = this
                 openFragment(homeFragment)
                 return@OnNavigationItemSelectedListener true
             }
@@ -69,8 +54,6 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
         transaction.commit()
     }
 
-
-
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,24 +68,6 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
 
         supportFragmentManager.beginTransaction().replace(R.id.container, HomeFragment()).commit()
 
-        geoCoder = Geocoder(this, Locale.getDefault())
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-            currentLocation = location
-        }
-
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        getCurrentTime()
-    }
-
-    override fun onMapClicked() {
-        println(1234)
     }
 
     override fun onLetsGoButtonClicked() {
@@ -115,46 +80,5 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
                 PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(permission), 0)
         }
-    }
-
-    private fun didSetCurrentLocation() {
-
-        if (currentLocation != null) {
-            homeTown = parseLocationToAddress(currentLocation!!)
-
-            getCelciusDegreeForCurrentLocation(currentLocation!!)
-        }
-
-    }
-
-    private fun getCelciusDegreeForCurrentLocation(location: Location): String {
-        return ""
-    }
-
-    private fun parseLocationToAddress(location: Location): String {
-
-        val address = geoCoder?.getFromLocation(location.latitude, location.longitude, 1)
-
-        if (address?.get(0)?.locality != null) {
-            return address?.get(0)?.locality!!
-        } else {
-            return ""
-        }
-
-    }
-
-    private fun didSetHomeTown() {
-        cityName.text = homeTown
-    }
-
-    private fun getCurrentTime() {
-
-        val currentDate = Date(Calendar.getInstance().timeInMillis)
-
-        val dateFormatter = SimpleDateFormat("dd/MM/yyyy")
-
-        var dateString = dateFormatter.format(currentDate)
-
-        timeStamp.text = dateString
     }
 }
