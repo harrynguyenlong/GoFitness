@@ -1,17 +1,24 @@
 package fi.metropolia.harrytoan.gofitness
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Geocoder
+import android.location.Location
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import fi.metropolia.harrytoan.gofitness.Retrofit.WeatherAPI
 import kotlinx.android.synthetic.main.fragment_home.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.*
 
 interface HomeFragmentInterface {
     fun onLetsGoButtonClicked()
@@ -19,7 +26,23 @@ interface HomeFragmentInterface {
 
 class HomeFragment : Fragment() {
 
-    private var listener: HomeFragmentInterface? = null
+    var listener: HomeFragmentInterface? = null
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    private var currentLocation: Location? = null
+        set(value: Location?) {
+            field = value
+            didSetCurrentLocation()
+        }
+
+    private var geoCoder: Geocoder? = null
+
+    private var homeTown: String = ""
+        set(value) {
+            field = value
+            didSetHomeTown()
+        }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -37,6 +60,7 @@ class HomeFragment : Fragment() {
 
     }
 
+    @SuppressLint("MissingPermission")
     override fun onResume() {
         super.onResume()
 
@@ -57,6 +81,16 @@ class HomeFragment : Fragment() {
         }
 
         weatherService.getInfoFromWeatherAPI("helsinki").enqueue(value)
+
+        getCurrentTime()
+
+        geoCoder = Geocoder(context, Locale.getDefault())
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
+
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            currentLocation = location
+        }
 
     }
 
@@ -83,5 +117,41 @@ class HomeFragment : Fragment() {
         val celciusDegree = kevinDegree - 273.15
 
         degree.text = "${celciusDegree.toInt()}°C"
+    }
+
+    private fun didSetCurrentLocation() {
+
+        if (currentLocation != null) {
+            homeTown = parseLocationToAddress(currentLocation!!)
+
+        }
+
+    }
+
+    private fun didSetHomeTown() {
+        cityName.text = homeTown
+    }
+
+    private fun parseLocationToAddress(location: Location): String {
+
+        val address = geoCoder?.getFromLocation(location.latitude, location.longitude, 1)
+
+        if (address?.get(0)?.locality != null) {
+            return address?.get(0)?.locality!!
+        } else {
+            return ""
+        }
+
+    }
+
+    private fun getCurrentTime() {
+
+        val currentDate = Date(Calendar.getInstance().timeInMillis)
+
+        val dateFormatter = SimpleDateFormat("dd/MM/yyyy")
+
+        var dateString = dateFormatter.format(currentDate)
+
+        timeStamp.text = dateString
     }
 }
