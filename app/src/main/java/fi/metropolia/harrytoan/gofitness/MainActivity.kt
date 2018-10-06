@@ -1,9 +1,9 @@
 package fi.metropolia.harrytoan.gofitness
 
 import android.annotation.SuppressLint
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.content.pm.PackageManager
-import android.location.Geocoder
-import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
@@ -11,45 +11,48 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import android.text.method.TextKeyListener.clear
-import android.util.Log
-import com.google.android.gms.location.*
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import fi.metropolia.harrytoan.gofitness.Room.ViewModel
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_home.*
-import java.text.SimpleDateFormat
-import java.time.format.DateTimeFormatter
-import java.util.*
+
 
 class MainActivity : AppCompatActivity(), HomeFragmentInterface {
+
+    private val MAP_FRAGMENT = "MapFragment"
+    private val HOME_FRAGMENT = "MapFragment"
+    private val USER_FRAGMENT = "MapFragment"
+    private val CAMERA_FRAGMENT = "MapFragment"
+
+    // ViewModal for Room
+
+    private val viewModel by lazy {
+        ViewModelProviders.of(this).get(ViewModel::class.java)
+    }
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.navigation_home -> {
                 val homeFragment = HomeFragment.newInstance()
                 homeFragment.listener = this
-                openFragment(homeFragment)
+                openFragment(homeFragment, HOME_FRAGMENT)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_user -> {
                 val userFragment = UserFragment.newInstance()
-                openFragment(userFragment)
+                openFragment(userFragment, USER_FRAGMENT)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_maps -> {
-                val mapFragment = MapFragment.newInstance()
-                openFragment(mapFragment)
+                val mapFragment = MapFragment(viewModel)
+                openFragment(mapFragment, MAP_FRAGMENT)
                 return@OnNavigationItemSelectedListener true
             }
         }
         false
     }
 
-    private fun openFragment(fragment: Fragment) {
+    private fun openFragment(fragment: Fragment, tag: String) {
         val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.container, fragment)
+        transaction.replace(R.id.container, fragment, tag)
         transaction.addToBackStack(null)
         transaction.commit()
     }
@@ -67,6 +70,16 @@ class MainActivity : AppCompatActivity(), HomeFragmentInterface {
 
 
         supportFragmentManager.beginTransaction().replace(R.id.container, HomeFragment()).commit()
+
+        viewModel.allCandies.observe(this, Observer {
+            it?.let {
+                val mapFragment = supportFragmentManager.findFragmentByTag(MAP_FRAGMENT) as MapFragment
+
+                if (mapFragment != null && mapFragment.isVisible) {
+                    mapFragment.updateMap(it)
+                }
+            }
+        })
 
     }
 

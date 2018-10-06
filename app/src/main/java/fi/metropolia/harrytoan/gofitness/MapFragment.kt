@@ -3,39 +3,30 @@ package fi.metropolia.harrytoan.gofitness
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
-import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.fragment_map.*
-import kotlinx.android.synthetic.main.fragment_map.view.*
-import android.graphics.drawable.VectorDrawable
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.support.v4.content.ContextCompat
-import android.graphics.drawable.Drawable
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.opengl.ETC1.getHeight
-import android.opengl.ETC1.getWidth
 import android.support.v4.graphics.drawable.DrawableCompat
 import android.os.Build
+import com.google.android.gms.location.*
+import fi.metropolia.harrytoan.gofitness.Room.CandyRoomModel
+import fi.metropolia.harrytoan.gofitness.Room.ViewModel
 
 
+@SuppressLint("ValidFragment")
+class MapFragment(private val viewModel: ViewModel) : Fragment(), OnMapReadyCallback {
 
-
-
-
-class MapFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var mMapView: MapView
 
@@ -45,12 +36,42 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
+    private val locationRequest = LocationRequest().apply {
+        interval = 10000
+        fastestInterval = 5000
+        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+    }
+
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult?) {
+            locationResult?.lastLocation?.let {
+
+                val currentLocation = LatLng(it.latitude, it.longitude)
+
+                mCurrentLocation = currentLocation
+
+                val userLocation = Location("")
+                userLocation.latitude = currentLocation.latitude
+                userLocation.longitude = currentLocation.longitude
+
+                for (candy in listOfCandies) {
+                    val candyLocation = Location("")
+                    candyLocation.latitude = candy.location!!.latitude
+                    candyLocation.longitude = candy.location!!.longitude
+
+
+                    candy.IsCatch = userLocation.distanceTo(candyLocation) < 100
+                }
+            }
+        }
+    }
+
     private var listOfCandies = ArrayList<Candy>()
 
-    private var currentLocation: Location? = null
-        set(value: Location?) {
+    private var mCurrentLocation: LatLng? = null
+        set(value: LatLng?) {
             field = value
-            didSetCurrentLocation()
+              didSetCurrentLocation()
         }
 
     companion object {
@@ -61,7 +82,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
 
-        mView =  inflater.inflate(R.layout.fragment_map, container, false)
+        mView = inflater.inflate(R.layout.fragment_map, container, false)
 
         loadStaticListOfCandies()
 
@@ -83,6 +104,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
     }
 
     override fun onDetach() {
@@ -105,8 +127,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
 
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-            currentLocation = location
+            mCurrentLocation = LatLng(location!!.latitude, location!!.longitude)
         }
+
+        fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                null
+        )
 
     }
 
@@ -127,18 +155,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .position(candyLocation)
                     .title(candy.name)
                     .snippet(candy.des + ", power: ${candy.amount}")
-                    .icon(BitmapDescriptorFactory.fromBitmap(getBitmapFromVectorDrawable(context!!, R.drawable.ic_candy ))))
+                    .icon(BitmapDescriptorFactory.fromBitmap(getBitmapFromVectorDrawable(context!!, R.drawable.ic_candy))))
         }
 
     }
 
     private fun didSetCurrentLocation() {
 
-        if (currentLocation != null) {
+        if (mCurrentLocation != null) {
             // Do sth with current Location
 
             val center = CameraPosition.builder()
-                    .target(LatLng(currentLocation!!.latitude, currentLocation!!.longitude))
+                    .target(LatLng(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude))
                     .zoom(16.toFloat())
                     .bearing(0.toFloat())
                     .tilt(15.toFloat())
@@ -150,8 +178,20 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun loadStaticListOfCandies() {
-        listOfCandies.add(Candy(R.drawable.ic_candy, "Sello", "Shopping mall", 20.toDouble(), 60.218140, 24.812820))
-        listOfCandies.add(Candy(R.drawable.ic_candy, "Laurea", "School", 20.toDouble(), 60.220520, 24.807170))
+
+        val candiesInRoomDB = viewModel.allCandies
+
+        candiesInRoomDB.value?.let { candies ->
+            if (candies.count() == 0) {
+                // Nothing in the DB
+                println("Nothing")
+            } else {
+                // There are some candies saved from the DB
+
+                println("SomeThing")
+            }
+        }
+
     }
 
     fun getBitmapFromVectorDrawable(context: Context, drawableId: Int): Bitmap {
@@ -169,5 +209,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return bitmap
     }
 
+    fun updateMap(candies: List<CandyRoomModel>) {
+
+        // Setting list of candies goes here
+
+
+
+        // Then update mMapView
+
+        mMapView.invalidate()
+    }
 
 }
