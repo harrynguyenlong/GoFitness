@@ -22,12 +22,6 @@ class MainActivity : AppCompatActivity(), HomeFragmentInterface {
     private val USER_FRAGMENT = "MapFragment"
     private val CAMERA_FRAGMENT = "MapFragment"
 
-    // ViewModal for Room
-
-    private val viewModel by lazy {
-        ViewModelProviders.of(this).get(ViewModel::class.java)
-    }
-
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.navigation_home -> {
@@ -42,7 +36,7 @@ class MainActivity : AppCompatActivity(), HomeFragmentInterface {
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_maps -> {
-                val mapFragment = MapFragment(viewModel)
+                val mapFragment = MapFragment()
                 openFragment(mapFragment, MAP_FRAGMENT)
                 return@OnNavigationItemSelectedListener true
             }
@@ -70,16 +64,6 @@ class MainActivity : AppCompatActivity(), HomeFragmentInterface {
 
 
         supportFragmentManager.beginTransaction().replace(R.id.container, HomeFragment()).commit()
-
-        viewModel.allCandies.observe(this, Observer {
-            it?.let {
-                val mapFragment = supportFragmentManager.findFragmentByTag(MAP_FRAGMENT) as MapFragment
-
-                if (mapFragment != null && mapFragment.isVisible) {
-                    mapFragment.updateMap(it)
-                }
-            }
-        })
 
     }
 

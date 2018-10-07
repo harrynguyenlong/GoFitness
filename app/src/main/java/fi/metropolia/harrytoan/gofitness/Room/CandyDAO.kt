@@ -13,4 +13,7 @@ interface CandyDAO {
 
     @Query("DELETE FROM CandyRoomModel")
     fun deleteAll()
+
+    @Query("UPDATE CandyRoomModel SET isCatch = :isCatch WHERE id = :id")
+    fun update(isCatch: Boolean, id: Long)
 }

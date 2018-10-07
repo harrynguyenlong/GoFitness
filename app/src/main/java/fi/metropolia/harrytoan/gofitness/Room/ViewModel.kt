@@ -2,6 +2,7 @@ package fi.metropolia.harrytoan.gofitness.Room
 
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
+import fi.metropolia.harrytoan.gofitness.Candy
 
 class ViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -13,5 +14,8 @@ class ViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deleteAllCandies() = candyRoomDatabase.candyDAO().deleteAll()
 
+    fun update(candy: CandyRoomModel) {
+        candyRoomDatabase.candyDAO().update(candy.isCatch, candy.id)
+    }
 
 }

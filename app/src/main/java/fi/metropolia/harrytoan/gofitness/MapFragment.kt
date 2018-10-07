@@ -1,6 +1,8 @@
 package fi.metropolia.harrytoan.gofitness
 
 import android.annotation.SuppressLint
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.location.Location
 import android.os.Bundle
@@ -23,9 +25,10 @@ import com.google.android.gms.location.*
 import fi.metropolia.harrytoan.gofitness.Room.CandyRoomModel
 import fi.metropolia.harrytoan.gofitness.Room.ViewModel
 
+class MapFragment : Fragment(), OnMapReadyCallback {
 
-@SuppressLint("ValidFragment")
-class MapFragment(private val viewModel: ViewModel) : Fragment(), OnMapReadyCallback {
+
+    lateinit var candyListViewModel: ViewModel
 
 
     private lateinit var mMapView: MapView
@@ -54,19 +57,27 @@ class MapFragment(private val viewModel: ViewModel) : Fragment(), OnMapReadyCall
                 userLocation.latitude = currentLocation.latitude
                 userLocation.longitude = currentLocation.longitude
 
-                for (candy in listOfCandies) {
+                listOfCandies.forEachIndexed { index, candy ->
                     val candyLocation = Location("")
-                    candyLocation.latitude = candy.location!!.latitude
-                    candyLocation.longitude = candy.location!!.longitude
+                    candyLocation.latitude = candy.latitude
+                    candyLocation.longitude = candy.longitude
 
-
-                    candy.IsCatch = userLocation.distanceTo(candyLocation) < 100
+                    if (userLocation.distanceTo(candyLocation) < 100) {
+                        candy.isCatch = true
+                        candyListViewModel.update(candy)
+                    } else {
+                        // Do nothing
+                    }
                 }
             }
         }
     }
 
-    private var listOfCandies = ArrayList<Candy>()
+    private var listOfCandies = ArrayList<CandyRoomModel>()
+        set(value) {
+            field = value
+            didSetListOfCandies()
+        }
 
     private var mCurrentLocation: LatLng? = null
         set(value: LatLng?) {
@@ -84,7 +95,16 @@ class MapFragment(private val viewModel: ViewModel) : Fragment(), OnMapReadyCall
 
         mView = inflater.inflate(R.layout.fragment_map, container, false)
 
-        loadStaticListOfCandies()
+
+        val context = activity as? Context
+
+        candyListViewModel = ViewModelProviders.of(activity!!).get(ViewModel::class.java)
+
+        candyListViewModel.allCandies.observe(this, Observer {
+            it?.let {
+                updateMap(it)
+            }
+        })
 
         return mView
     }
@@ -148,15 +168,7 @@ class MapFragment(private val viewModel: ViewModel) : Fragment(), OnMapReadyCall
 
         googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
 
-        for (candy in listOfCandies) {
-            val candyLocation = LatLng(candy.location!!.latitude, candy.location!!.longitude)
 
-            googleMap.addMarker(MarkerOptions()
-                    .position(candyLocation)
-                    .title(candy.name)
-                    .snippet(candy.des + ", power: ${candy.amount}")
-                    .icon(BitmapDescriptorFactory.fromBitmap(getBitmapFromVectorDrawable(context!!, R.drawable.ic_candy))))
-        }
 
     }
 
@@ -173,23 +185,6 @@ class MapFragment(private val viewModel: ViewModel) : Fragment(), OnMapReadyCall
                     .build()
 
             mGoogleMap.moveCamera(CameraUpdateFactory.newCameraPosition(center))
-        }
-
-    }
-
-    private fun loadStaticListOfCandies() {
-
-        val candiesInRoomDB = viewModel.allCandies
-
-        candiesInRoomDB.value?.let { candies ->
-            if (candies.count() == 0) {
-                // Nothing in the DB
-                println("Nothing")
-            } else {
-                // There are some candies saved from the DB
-
-                println("SomeThing")
-            }
         }
 
     }
@@ -213,11 +208,51 @@ class MapFragment(private val viewModel: ViewModel) : Fragment(), OnMapReadyCall
 
         // Setting list of candies goes here
 
+        if (candies.count() == 0) {
+
+            println(candies.count())
+
+            candyListViewModel.insertCandy(CandyRoomModel("Sello", "Shopping mall", 20.toDouble(), false, 60.218140, 24.812820))
+            candyListViewModel.insertCandy(CandyRoomModel("Laurea", "School", 20.toDouble(), false, 60.220520, 24.807170))
+            candyListViewModel.insertCandy(CandyRoomModel("Kilonrinne 10", "Home", 20.toDouble(), false, 60.220800, 24.777650))
+            candyListViewModel.insertCandy(CandyRoomModel("Le PA", "Football Stadium", 20.toDouble(), false, 46.187080, 13.303170))
 
 
-        // Then update mMapView
+        } else {
 
-        mMapView.invalidate()
+            println(candies.count())
+
+            listOfCandies = ArrayList(candies)
+
+        }
+
+    }
+
+    private fun didSetListOfCandies() {
+
+        // Refresh the mapView
+
+        if (mGoogleMap != null) {
+
+            mGoogleMap.clear()
+
+            for (candy in listOfCandies) {
+
+                if (!candy.isCatch) {
+
+                    val candyLocation = LatLng(candy.latitude, candy.longitude)
+
+                    mGoogleMap.addMarker(MarkerOptions()
+                            .position(candyLocation)
+                            .title(candy.name)
+                            .snippet(candy.des + ", power: ${candy.amount}")
+                            .icon(BitmapDescriptorFactory.fromBitmap(getBitmapFromVectorDrawable(context!!, R.drawable.ic_candy))))
+
+                }
+
+            }
+        }
+
     }
 
 }
