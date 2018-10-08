@@ -25,15 +25,20 @@ import com.google.android.gms.location.*
 import fi.metropolia.harrytoan.gofitness.Room.CandyRoomModel
 import fi.metropolia.harrytoan.gofitness.Room.ViewModel
 
+interface MapFragmentDelegate {
+    fun didCatchCandy()
+}
+
 class MapFragment : Fragment(), OnMapReadyCallback {
 
+    var listener: MapFragmentDelegate? = null
 
     lateinit var candyListViewModel: ViewModel
 
 
     private lateinit var mMapView: MapView
 
-    private lateinit var mGoogleMap: GoogleMap
+    private var mGoogleMap: GoogleMap? = null
 
     private lateinit var mView: View
 
@@ -65,6 +70,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     if (userLocation.distanceTo(candyLocation) < 100) {
                         candy.isCatch = true
                         candyListViewModel.update(candy)
+                        listener?.didCatchCandy()
+
                     } else {
                         // Do nothing
                     }
@@ -74,10 +81,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private var listOfCandies = ArrayList<CandyRoomModel>()
-        set(value) {
-            field = value
-            didSetListOfCandies()
-        }
 
     private var mCurrentLocation: LatLng? = null
         set(value: LatLng?) {
@@ -164,11 +167,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         mGoogleMap = googleMap!!
 
-        mGoogleMap.isMyLocationEnabled = true
+        mGoogleMap?.isMyLocationEnabled = true
 
         googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
 
-
+        didSetListOfCandies()
 
     }
 
@@ -184,7 +187,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .tilt(15.toFloat())
                     .build()
 
-            mGoogleMap.moveCamera(CameraUpdateFactory.newCameraPosition(center))
+            mGoogleMap?.moveCamera(CameraUpdateFactory.newCameraPosition(center))
         }
 
     }
@@ -234,7 +237,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         if (mGoogleMap != null) {
 
-            mGoogleMap.clear()
+            mGoogleMap?.clear()
 
             for (candy in listOfCandies) {
 
@@ -242,7 +245,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
                     val candyLocation = LatLng(candy.latitude, candy.longitude)
 
-                    mGoogleMap.addMarker(MarkerOptions()
+                    mGoogleMap?.addMarker(MarkerOptions()
                             .position(candyLocation)
                             .title(candy.name)
                             .snippet(candy.des + ", power: ${candy.amount}")
