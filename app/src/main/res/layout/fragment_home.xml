@@ -133,7 +133,7 @@
 
 
             <TextView
-                android:id="@+id/numberOfCandies"
+                android:id="@+id/numberOfCandiesTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center"

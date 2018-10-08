@@ -13,9 +13,10 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import fi.metropolia.harrytoan.gofitness.Room.ViewModel
 import kotlinx.android.synthetic.main.activity_main.*
+import org.jetbrains.anko.toast
 
 
-class MainActivity : AppCompatActivity(), HomeFragmentInterface {
+class MainActivity : AppCompatActivity(), HomeFragmentInterface, MapFragmentDelegate {
 
     private val MAP_FRAGMENT = "MapFragment"
     private val HOME_FRAGMENT = "MapFragment"
@@ -37,6 +38,7 @@ class MainActivity : AppCompatActivity(), HomeFragmentInterface {
             }
             R.id.navigation_maps -> {
                 val mapFragment = MapFragment()
+                mapFragment.listener = this
                 openFragment(mapFragment, MAP_FRAGMENT)
                 return@OnNavigationItemSelectedListener true
             }
@@ -77,5 +79,9 @@ class MainActivity : AppCompatActivity(), HomeFragmentInterface {
                 PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(permission), 0)
         }
+    }
+
+    override fun didCatchCandy() {
+        toast("You just catch a candy!")
     }
 }

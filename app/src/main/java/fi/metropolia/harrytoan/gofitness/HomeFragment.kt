@@ -1,6 +1,7 @@
 package fi.metropolia.harrytoan.gofitness
 
 import android.annotation.SuppressLint
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.location.Geocoder
 import android.location.Location
@@ -12,7 +13,10 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import fi.metropolia.harrytoan.gofitness.R.id.*
 import fi.metropolia.harrytoan.gofitness.Retrofit.WeatherAPI
+import fi.metropolia.harrytoan.gofitness.Room.CandyRoomModel
+import fi.metropolia.harrytoan.gofitness.Room.ViewModel
 import kotlinx.android.synthetic.main.fragment_home.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -27,6 +31,8 @@ interface HomeFragmentInterface {
 class HomeFragment : Fragment() {
 
     var listener: HomeFragmentInterface? = null
+
+    lateinit var candyListViewModel: ViewModel
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -46,7 +52,15 @@ class HomeFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
+        val context = activity as? Context
 
+        candyListViewModel = ViewModelProviders.of(activity!!).get(ViewModel::class.java)
+
+        candyListViewModel.allCandies.observe(this, android.arch.lifecycle.Observer {
+            it?.let {
+                updateUI(it)
+            }
+        })
 
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
@@ -153,5 +167,18 @@ class HomeFragment : Fragment() {
         var dateString = dateFormatter.format(currentDate)
 
         timeStamp.text = dateString
+    }
+
+    private fun updateUI(candies: List<CandyRoomModel>) {
+        var numberOfCandies = 0
+
+        for (candy in candies) {
+            if (candy.isCatch) {
+                numberOfCandies += candy.amount.toInt()
+            }
+        }
+
+        numberOfCandiesTxt.text = numberOfCandies.toString()
+
     }
 }
