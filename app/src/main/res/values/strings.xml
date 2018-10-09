@@ -9,6 +9,11 @@
     <string name="weatherIcon">Weather Icon</string>
     <string name="candyIcon">Candy Icon</string>
     <string name="locationIcon">Location Icon</string>
+    <string name="channel_name">channel_name</string>
+    <string name="channel_description">channel_description</string>
+    <string name="New_achievement">New achievement</string>
+    <string name="title">Congratulate! You have finished your first 100 meters!</string>
+
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
