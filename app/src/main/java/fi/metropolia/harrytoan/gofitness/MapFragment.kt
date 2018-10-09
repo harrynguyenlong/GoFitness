@@ -266,7 +266,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
             candyListViewModel.insertCandy(CandyRoomModel("Laurea", "School", 20.toDouble(), false, 60.220520, 24.807170))
             candyListViewModel.insertCandy(CandyRoomModel("Kilonrinne 10", "Home", 20.toDouble(), false, 60.220800, 24.777650))
             candyListViewModel.insertCandy(CandyRoomModel("Le PA", "Football Stadium", 20.toDouble(), false, 46.187080, 13.303170))
-
+            candyListViewModel.insertCandy(CandyRoomModel("Le PA", "Football Stadium", 20.toDouble(), false, 60.222720, 24.805510))
 
         } else {
 
