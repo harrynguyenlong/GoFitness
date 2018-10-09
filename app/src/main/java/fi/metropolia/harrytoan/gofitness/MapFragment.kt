@@ -11,30 +11,73 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.fragment_map.*
 import android.support.v4.content.ContextCompat
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.support.v4.graphics.drawable.DrawableCompat
 import android.os.Build
+import android.util.Log
 import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.*
+import fi.metropolia.harrytoan.gofitness.Retrofit.GoogleMapDirectionAPI
 import fi.metropolia.harrytoan.gofitness.Room.CandyRoomModel
 import fi.metropolia.harrytoan.gofitness.Room.ViewModel
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 interface MapFragmentDelegate {
     fun didCatchCandy()
 }
 
-class MapFragment : Fragment(), OnMapReadyCallback {
+class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     var listener: MapFragmentDelegate? = null
 
     lateinit var candyListViewModel: ViewModel
 
+    private val polylines = ArrayList<Polyline>()
+
+    private val directionService = GoogleMapDirectionAPI.service
+
+    private val value = object : Callback<GoogleMapDirectionAPI.GoogleMapModel.DirectionInfo> {
+        override fun onFailure(call: Call<GoogleMapDirectionAPI.GoogleMapModel.DirectionInfo>, t: Throwable) {
+            Log.d("weather", t.localizedMessage)
+        }
+
+        override fun onResponse(call: Call<GoogleMapDirectionAPI.GoogleMapModel.DirectionInfo>, response: Response<GoogleMapDirectionAPI.GoogleMapModel.DirectionInfo>) {
+            if (response != null) {
+                Log.d("Value", "${response.body()!!.routes.first().overview_polyline.points}")
+
+                val option = PolylineOptions().apply {
+                    color(Color.RED)
+                    width(5f)
+                }
+
+                val LatLongB = LatLngBounds.Builder()
+
+                val listOfPoints = decodePoly(response.body()!!.routes.first().overview_polyline.points)
+
+                option.add(mCurrentLocation)
+
+                LatLongB.include(mCurrentLocation)
+
+                for (point in listOfPoints) {
+                    option.add(point)
+                    LatLongB.include(point)
+                }
+
+                val bounds = LatLongB.build()
+
+                polylines.add(mGoogleMap!!.addPolyline(option))
+
+                mGoogleMap?.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
+
+            }
+        }
+    }
 
     private lateinit var mMapView: MapView
 
@@ -167,6 +210,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         mGoogleMap = googleMap!!
 
+        mGoogleMap?.setOnMarkerClickListener(this)
+
         mGoogleMap?.isMyLocationEnabled = true
 
         googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
@@ -179,6 +224,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         if (mCurrentLocation != null) {
             // Do sth with current Location
+
+
 
             val center = CameraPosition.builder()
                     .target(LatLng(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude))
@@ -255,7 +302,61 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
             }
         }
+    }
 
+    override fun onMarkerClick(marker: Marker?): Boolean {
+
+        mCurrentLocation?.let {
+            directionService.getDirection("${it.latitude},${it.longitude}", "${marker!!.position.latitude},${marker!!.position.longitude}")
+                    .enqueue(value)
+
+            while (polylines.count() > 0) {
+                polylines[0].remove()
+                polylines.removeAt(0)
+            }
+
+            polylines.clear()
+
+        }
+
+        return true
+    }
+
+    private fun decodePoly(encoded: String): List<LatLng> {
+        val poly = ArrayList<LatLng>()
+        var index = 0
+        val len = encoded.length
+        var lat = 0
+        var lng = 0
+
+        while (index < len) {
+            var b: Int
+            var shift = 0
+            var result = 0
+            do {
+                b = encoded[index++].toInt() - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dlat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+            lat += dlat
+
+            shift = 0
+            result = 0
+            do {
+                b = encoded[index++].toInt() - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+            lng += dlng
+
+            val p = LatLng(lat.toDouble() / 1E5,
+                    lng.toDouble() / 1E5)
+            poly.add(p)
+        }
+
+        return poly
     }
 
 }
