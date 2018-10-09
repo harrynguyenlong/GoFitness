@@ -129,13 +129,16 @@ class UserFragment : Fragment(), SensorEventListener {
     }
 
     private fun didSetTraveledDistance() {
-        traveledDistanceTxt.text = "%.2f".format(mtraveledDistance)
 
-        val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
+        if (traveledDistanceTxt != null) {
+            traveledDistanceTxt.text = "%.2f".format(mtraveledDistance)
 
-        with(sharedPref.edit()) {
-            putFloat(getString(R.string.traveledDistance), mtraveledDistance)
-            commit()
+            val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
+
+            with(sharedPref.edit()) {
+                putFloat(getString(R.string.traveledDistance), mtraveledDistance)
+                commit()
+            }
         }
     }
 }
