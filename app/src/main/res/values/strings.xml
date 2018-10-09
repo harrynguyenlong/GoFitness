@@ -5,6 +5,7 @@
     <string name="collectedString">You have collected</string>
     <string name="readyToGoOut">Ready to go outside?</string>
     <string name="letsgo">Yes, Let\'s go</string>
+    <string name="traveledDistance">traveledDistance</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
