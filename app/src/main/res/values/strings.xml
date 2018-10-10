@@ -13,6 +13,7 @@
     <string name="channel_description">channel_description</string>
     <string name="New_achievement">New achievement</string>
     <string name="title">Congratulate! You have finished your first 100 meters!</string>
+    <string name="isNotificationShown">isNotificationShown</string>
 
 
     <!-- TODO: Remove or change this placeholder text -->

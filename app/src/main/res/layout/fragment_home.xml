@@ -140,13 +140,14 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="370"
+                android:padding="10dp"
                 android:textColor="@color/black"
                 android:textSize="45sp" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:src="@drawable/ic_cotton_candy"
+                android:src="@drawable/ic_green_candy"
                 android:contentDescription="@string/candyIcon"/>
 
         </LinearLayout>
