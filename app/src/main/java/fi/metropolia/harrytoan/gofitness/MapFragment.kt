@@ -40,6 +40,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
     private val polylines = ArrayList<Polyline>()
 
+    private var isMapCenteredFirstTime = false
+
     private val directionService = GoogleMapDirectionAPI.service
 
     private val value = object : Callback<GoogleMapDirectionAPI.GoogleMapModel.DirectionInfo> {
@@ -110,11 +112,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
                     candyLocation.latitude = candy.latitude
                     candyLocation.longitude = candy.longitude
 
-                    if (userLocation.distanceTo(candyLocation) < 100) {
+                    if (userLocation.distanceTo(candyLocation) < 100 && !candy.isCatch) {
                         candy.isCatch = true
                         candyListViewModel.update(candy)
                         listener?.didCatchCandy()
-
                     } else {
                         // Do nothing
                     }
@@ -222,10 +223,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
     private fun didSetCurrentLocation() {
 
-        if (mCurrentLocation != null) {
+        if (mCurrentLocation != null && !isMapCenteredFirstTime) {
+
             // Do sth with current Location
-
-
 
             val center = CameraPosition.builder()
                     .target(LatLng(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude))
@@ -235,6 +235,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
                     .build()
 
             mGoogleMap?.moveCamera(CameraUpdateFactory.newCameraPosition(center))
+
+            isMapCenteredFirstTime = true
         }
 
     }

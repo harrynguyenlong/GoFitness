@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity(), HomeFragmentInterface, MapFragmentDele
     }
 
     override fun didCatchCandy() {
-        // toast("You just catch a candy!")
+        toast("You just catch a candy!")
     }
 
     private fun createNotificationChannel() {

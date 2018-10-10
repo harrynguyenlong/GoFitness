@@ -25,8 +25,6 @@ class UserFragment : Fragment(), SensorEventListener {
 
     private var sensorManager: SensorManager? = null
 
-    private var showFirstNotif = false
-
     private var mtraveledDistance: Float = 0.toFloat()
         set(value) {
             field = value
@@ -144,11 +142,16 @@ class UserFragment : Fragment(), SensorEventListener {
                 commit()
             }
 
+            val showFirstNotif = sharedPref.getBoolean(getString(R.string.isNotificationShown), false)
+
             if (!showFirstNotif && mtraveledDistance > 10) {
                 val intent = Intent("complete-first-100m")
                 LocalBroadcastManager.getInstance(context!!).sendBroadcast(intent)
 
-                showFirstNotif = true
+                with(sharedPref.edit()) {
+                    putBoolean(getString(R.string.isNotificationShown), true)
+                    commit()
+                }
             }
         }
     }
