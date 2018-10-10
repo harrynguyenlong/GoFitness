@@ -2,6 +2,7 @@ package fi.metropolia.harrytoan.gofitness
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -9,6 +10,7 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.content.LocalBroadcastManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +24,8 @@ class UserFragment : Fragment(), SensorEventListener {
     private var isRunning = false
 
     private var sensorManager: SensorManager? = null
+
+    private var showFirstNotif = false
 
     private var mtraveledDistance: Float = 0.toFloat()
         set(value) {
@@ -138,6 +142,13 @@ class UserFragment : Fragment(), SensorEventListener {
             with(sharedPref.edit()) {
                 putFloat(getString(R.string.traveledDistance), mtraveledDistance)
                 commit()
+            }
+
+            if (!showFirstNotif && mtraveledDistance > 10) {
+                val intent = Intent("complete-first-100m")
+                LocalBroadcastManager.getInstance(context!!).sendBroadcast(intent)
+
+                showFirstNotif = true
             }
         }
     }
